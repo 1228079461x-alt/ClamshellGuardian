@@ -12,11 +12,12 @@
 - Helper 不接受任意命令、路径或 shell 参数。
 - 会话最长 3600 秒，不能通过心跳续期。
 - 应用失联 15 秒、电池不高于 15%（未充电）、严重热压力或到期均会恢复睡眠。
+- 每次检测到合盖后，Helper 主动请求显示器立即休眠；不修改持久亮度设置。
 - 已被其他软件设置的 `SleepDisabled=Yes` 不会被本应用接管。
 
 ## Beta 分发说明
 
-0.1.0 Release 是 ad-hoc 签名、未公证的 Beta。使用前请从本仓库 Release 下载并核对 SHA-256。正式公开分发需要 Apple Developer ID 与公证；当前构建不能冒充已被 Apple 验证的软件。
+0.1.1 Release 是 ad-hoc 签名、未公证的 Beta。使用前请从本仓库 Release 下载并核对 SHA-256。正式公开分发需要 Apple Developer ID 与公证；当前构建不能冒充已被 Apple 验证的软件。
 
 ## 报告漏洞
 

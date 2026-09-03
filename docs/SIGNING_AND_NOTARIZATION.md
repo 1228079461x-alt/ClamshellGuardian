@@ -1,8 +1,8 @@
 # 签名、公证与正式发行
 
-## 0.1.0 Beta 的状态
+## 0.1.1 Beta 的状态
 
-当前构建环境没有 Developer ID 证书与完整 Xcode，因此 0.1.0 使用 ad-hoc 签名，未提交 Apple 公证。它适合源码审计和 Beta 测试，但 Gatekeeper 会提示开发者身份无法验证。
+当前构建环境没有 Developer ID 证书与完整 Xcode，因此 0.1.1 使用 ad-hoc 签名，未提交 Apple 公证。它适合源码审计和 Beta 测试，但 Gatekeeper 会提示开发者身份无法验证。
 
 ## 正式发行要求
 

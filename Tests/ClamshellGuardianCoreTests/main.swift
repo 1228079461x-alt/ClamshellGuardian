@@ -99,10 +99,34 @@ let tests: [(String, () throws -> Void)] = [
         try check(!PlatformSupport.supports(architecture: "x86_64"), "Intel 架构不应被当前发行包接受")
         try check(!PlatformSupport.supports(architecture: ""), "空架构不应受支持")
     }),
+    ("合盖主动熄屏且每次合盖只触发一次", {
+        var state = LidDisplayState.armed
+        var transition = LidDisplayPolicy.transition(from: state, lidClosed: false)
+        try check(!transition.shouldRequestDisplaySleep && transition.nextState == .armed, "开盖时不应熄屏")
+
+        transition = LidDisplayPolicy.transition(from: transition.nextState, lidClosed: true)
+        try check(transition.shouldRequestDisplaySleep, "首次合盖必须主动熄屏")
+        state = transition.nextState
+
+        transition = LidDisplayPolicy.transition(from: state, lidClosed: true)
+        try check(!transition.shouldRequestDisplaySleep, "同一次合盖不应重复发送熄屏命令")
+
+        transition = LidDisplayPolicy.transition(from: transition.nextState, lidClosed: false)
+        try check(transition.nextState == .armed, "重新开盖后必须重新待命")
+
+        transition = LidDisplayPolicy.transition(from: transition.nextState, lidClosed: true)
+        try check(transition.shouldRequestDisplaySleep, "第二次合盖必须再次主动熄屏")
+    }),
     ("非授权 UID 被拒绝", {
         try check(IPCAuthorization.isAllowed(peerUID: 501, configuredUID: 501), "授权 UID 被拒绝")
         try check(!IPCAuthorization.isAllowed(peerUID: 502, configuredUID: 501), "错误接受其他 UID")
         try check(!IPCAuthorization.isAllowed(peerUID: 0, configuredUID: 0), "不应接受 root/root 配置")
+    }),
+    ("IPC v2 强制更新含熄屏功能的 Helper", {
+        try check(GuardianConstants.ipcVersion == 2, "当前协议必须为 v2")
+        try check(HelperRequest(command: .status).version == 2, "请求没有使用 v2")
+        let response = HelperResponse(ok: true, message: "test", active: false, sleepDisabled: false)
+        try check(response.version == 2, "响应没有使用 v2")
     }),
     ("不覆盖其他软件的 SleepDisabled", {
         try check(!SleepOwnershipPolicy.canStart(sleepDisabled: true, ownedStateMarkerExists: false), "错误覆盖外部状态")

@@ -326,7 +326,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         断网保护：\(report.networkSafetyEnabled ? "开启（离线 10 分钟后结束）" : "关闭")
         保护范围：\(report.systemWideProtectionConfirmed ? "整机——所有应用与后台进程" : "未确认")
         最高热状态：\(thermalDescription(report.highestThermalLevel))
-        屏幕：应用不阻止息屏，闭盖后由系统关闭显示屏
+        屏幕：检测到合盖后，Helper 已主动请求显示器立即休眠；不会改变亮度设置
         """
         showAlert(title: "上次运行报告", message: message)
     }

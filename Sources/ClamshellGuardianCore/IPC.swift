@@ -15,7 +15,7 @@ public struct HelperRequest: Codable, Sendable {
     public let reason: StopReason?
 
     public init(
-        version: Int = 1,
+        version: Int = GuardianConstants.ipcVersion,
         command: HelperCommand,
         sessionID: String? = nil,
         deadline: Date? = nil,
@@ -40,7 +40,7 @@ public struct HelperResponse: Codable, Sendable {
     public let stopReason: StopReason?
 
     public init(
-        version: Int = 1,
+        version: Int = GuardianConstants.ipcVersion,
         ok: Bool,
         message: String,
         active: Bool,
@@ -61,6 +61,7 @@ public struct HelperResponse: Codable, Sendable {
 }
 
 public enum GuardianConstants {
+    public static let ipcVersion = 2
     public static let helperLabel = "com.xufeiyang.clamshellguardian.helper"
     public static let helperInstallPath = "/Library/PrivilegedHelperTools/com.xufeiyang.clamshellguardian.helper"
     public static let launchDaemonPath = "/Library/LaunchDaemons/com.xufeiyang.clamshellguardian.helper.plist"

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.1 Beta — 2026-09-04
+
+- 修复合盖守护开启后显示器可能仍然点亮的问题。
+- Helper 现在检测 `AppleClamshellState`，每次合盖主动执行一次 `pmset displaysleepnow`。
+- 熄屏命令失败会重试；重新开盖后为下一次合盖重新待命。
+- 不修改亮度值，避免开盖后遗留最低亮度。
+- IPC 提升到 v2，确保升级时旧 Helper 会被替换。
+
 ## 0.1.0 Beta — 2026-09-03
 
 - 首个独立公开 Beta。

@@ -12,6 +12,7 @@ final class ControlWindowController: NSWindowController, NSWindowDelegate {
     private let batteryValue = NSTextField(labelWithString: "—")
     private let networkValue = NSTextField(labelWithString: "—")
     private let scopeValue = NSTextField(labelWithString: "所有应用与后台进程")
+    private let displayValue = NSTextField(labelWithString: "合盖后立即关闭")
     private let thermalValue = NSTextField(labelWithString: "—")
     private let lidValue = NSTextField(labelWithString: "不可合盖（尚未启动）")
     private let toggleButton = NSButton(title: "开始 60 分钟守护", target: nil, action: nil)
@@ -32,7 +33,7 @@ final class ControlWindowController: NSWindowController, NSWindowDelegate {
         self.onNetworkSafetyChanged = onNetworkSafetyChanged
 
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 580, height: 590),
+            contentRect: NSRect(x: 0, y: 0, width: 580, height: 610),
             styleMask: [.titled, .closable, .miniaturizable],
             backing: .buffered,
             defer: false
@@ -83,7 +84,7 @@ final class ControlWindowController: NSWindowController, NSWindowDelegate {
             if !snapshot.networkSafetyEnabled || snapshot.networkText == "正常" {
                 statusLabel.stringValue = "✓ 可以合盖"
                 statusLabel.textColor = .systemGreen
-                statusDetail.stringValue = "Helper 已确认整机防睡眠开启；当前所有应用与后台进程都可继续运行。"
+                statusDetail.stringValue = "Helper 已确认整机防睡眠开启；合盖后会立即关闭显示器，所有应用与后台进程继续运行。"
             } else {
                 statusLabel.textColor = .systemOrange
                 statusDetail.stringValue = "防睡眠仍在工作，正在等待现有 Wi‑Fi 或 macOS 的热点回退恢复网络。"
@@ -154,6 +155,7 @@ final class ControlWindowController: NSWindowController, NSWindowDelegate {
             [makeCaption("电量"), batteryValue],
             [makeCaption("网络"), networkValue],
             [makeCaption("运行范围"), scopeValue],
+            [makeCaption("显示器"), displayValue],
             [makeCaption("热状态"), thermalValue],
             [makeCaption("合盖状态"), lidValue]
         ])
@@ -187,7 +189,7 @@ final class ControlWindowController: NSWindowController, NSWindowDelegate {
         hotspotNote.maximumNumberOfLines = 0
 
         let safetyNote = NSTextField(wrappingLabelWithString:
-            "安全：仅在坚硬、通风的桌面上合盖使用。60 分钟到期、电量不高于 15% 或严重过热时会自动停止；勾选网络保护后，连续离线 10 分钟也会停止。"
+            "安全：合盖后 Helper 会立即让显示器休眠，不修改亮度值。仅在坚硬、通风的桌面上使用；到期、低电量或严重过热时会恢复正常睡眠。"
         )
         safetyNote.font = .systemFont(ofSize: 12, weight: .medium)
         safetyNote.textColor = .systemOrange

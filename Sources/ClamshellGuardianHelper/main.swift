@@ -18,6 +18,10 @@ private final class SystemPowerController {
         runPMSet(["sleepnow"])
     }
 
+    func displaySleepNow() -> Bool {
+        runPMSet(["displaysleepnow"])
+    }
+
     func sleepDisabled() -> Bool {
         registryBool(key: "SleepDisabled") ?? false
     }
@@ -107,6 +111,7 @@ private final class SessionCoordinator {
     private var lastHeartbeatUptime: TimeInterval?
     private var deadlineUptime: TimeInterval?
     private var lastStopReason: StopReason?
+    private var lidDisplayState: LidDisplayState = .armed
     private var watchdogTimer: DispatchSourceTimer?
     private var signalSources: [DispatchSourceSignal] = []
 
@@ -137,7 +142,7 @@ private final class SessionCoordinator {
     }
 
     func handle(_ request: HelperRequest) -> HelperResponse {
-        guard request.version == 1 else {
+        guard request.version == GuardianConstants.ipcVersion else {
             return response(ok: false, message: "不支持的 IPC 版本")
         }
 
@@ -195,6 +200,7 @@ private final class SessionCoordinator {
         lastHeartbeatUptime = ProcessInfo.processInfo.systemUptime
         deadlineUptime = startUptime + deadline.timeIntervalSince(now)
         lastStopReason = nil
+        lidDisplayState = .armed
         return responseLocked(ok: true, message: "闭盖守护已启动")
     }
 
@@ -224,6 +230,7 @@ private final class SessionCoordinator {
         lastHeartbeatUptime = nil
         deadlineUptime = nil
         lastStopReason = reason
+        lidDisplayState = .armed
         lock.unlock()
 
         guard hadOwnedSession else {
@@ -241,6 +248,7 @@ private final class SessionCoordinator {
         lock.lock()
         guard let record, let lastHeartbeat else {
             let needsRecovery = FileManager.default.fileExists(atPath: GuardianConstants.statePath)
+            lidDisplayState = .armed
             lock.unlock()
             if needsRecovery {
                 _ = restoreNormalSleep(forceSleepWhenClosed: true)
@@ -249,6 +257,12 @@ private final class SessionCoordinator {
         }
         let capturedHeartbeatUptime = lastHeartbeatUptime
         let capturedDeadlineUptime = deadlineUptime
+        let displayTransition = LidDisplayPolicy.transition(
+            from: lidDisplayState,
+            lidClosed: power.lidClosed()
+        )
+        lidDisplayState = displayTransition.nextState
+        let capturedSessionID = record.sessionID
         let battery = power.batteryState()
         let uptime = ProcessInfo.processInfo.systemUptime
         let input = GovernorInput(
@@ -274,6 +288,13 @@ private final class SessionCoordinator {
 
         if let reason {
             stopInternally(reason: reason)
+        } else if displayTransition.shouldRequestDisplaySleep,
+                  !power.displaySleepNow() {
+            lock.lock()
+            if self.record?.sessionID == capturedSessionID, power.lidClosed() {
+                lidDisplayState = .armed
+            }
+            lock.unlock()
         }
     }
 
@@ -285,6 +306,7 @@ private final class SessionCoordinator {
         lastHeartbeatUptime = nil
         deadlineUptime = nil
         lastStopReason = reason
+        lidDisplayState = .armed
         lock.unlock()
         if hadOwnedSession {
             _ = restoreNormalSleep(forceSleepWhenClosed: true)

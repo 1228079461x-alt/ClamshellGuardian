@@ -27,7 +27,7 @@ final class SetupWindowController: NSWindowController, NSWindowDelegate {
         self.completion = completion
 
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 620, height: 485),
+            contentRect: NSRect(x: 0, y: 0, width: 620, height: 505),
             styleMask: [.titled, .closable],
             backing: .buffered,
             defer: false
@@ -60,6 +60,7 @@ final class SetupWindowController: NSWindowController, NSWindowDelegate {
             "• 请求管理员权限安装受限 Helper\n" +
             "• 确认当前设备是 Apple Silicon（M 系列）Mac\n" +
             "• 用 10 秒测试确认 SleepDisabled 能开启并恢复\n" +
+            "• 合盖后主动关闭显示器，但不改变亮度设置\n" +
             "• 不安装 Codex、风扇软件或其他第三方依赖"
         )
         checklist.font = .systemFont(ofSize: 13)

@@ -2,7 +2,7 @@
 
 一个原生、中文、面向 Apple Silicon Mac 的菜单栏工具。在固定 60 分钟内阻止合盖睡眠，让整台 Mac 上已运行的应用、终端任务和后台进程继续工作。
 
-> 当前为 **0.1.0 Beta**。它会改变系统级睡眠策略，请先阅读安全提示，并仅在坚硬、通风的桌面上使用。不要把运行中的合盖 Mac 放进包、床铺、抽屉或其他封闭空间。
+> 当前为 **0.1.1 Beta**。它会改变系统级睡眠策略，请先阅读安全提示，并仅在坚硬、通风的桌面上使用。不要把运行中的合盖 Mac 放进包、床铺、抽屉或其他封闭空间。
 
 ## 它保护什么
 
@@ -11,10 +11,11 @@
 - 应用每 5 秒发送心跳；应用崩溃或被强制退出后，Helper 会在 15 秒内恢复正常睡眠策略。
 - 使用电池且电量降到 15% 时停止；系统热状态达到 `serious` 或 `critical` 时停止。
 - 可选“需要持续联网”：默认开启，连续离线 10 分钟时停止；关闭后不会因断网终止本地任务。
+- Helper 检测到真正合盖后立即执行 `pmset displaysleepnow`，主动让显示器休眠，同时保持整机任务运行。
 - 不接管风扇，不要求 Macs Fan Control。无风扇的 MacBook Air 也不会因此被拒绝。
 - 不请求提醒事项、iCloud、辅助功能、录屏或定位权限；不含遥测。
 
-屏幕不会被强制点亮。MacBook 合盖后显示面板由系统关闭，因此无需把亮度写成最低值，也不会把低亮度残留到下一次开盖。
+应用不依赖 macOS 在 `SleepDisabled=Yes` 时自行熄屏，也不会修改并遗留亮度值。每次合盖主动发送一次显示器休眠命令；重新开盖后重新待命，下一次合盖会再次执行。该命令会让当前连接的显示器一起休眠。
 
 ## 兼容性
 
@@ -29,7 +30,7 @@
 
 ## 下载与使用
 
-1. 从 [Releases](https://github.com/1228079461x-alt/ClamshellGuardian/releases) 下载 `ClamshellGuardian-0.1.0-arm64-beta.zip`。
+1. 从 [Releases](https://github.com/1228079461x-alt/ClamshellGuardian/releases) 下载 `ClamshellGuardian-0.1.1-arm64-beta.zip`。
 2. 解压后把“合盖守护.app”拖到“应用程序”。
 3. 当前 Beta 尚未使用 Apple Developer ID 公证。首次打开如被 Gatekeeper 阻止，请按 Apple 的[安全打开说明](https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unidentified-developer-mh40616/mac)操作；只应使用本仓库 Release，并核对 `SHA256SUMS.txt`。
 4. 点击“开始 60 分钟守护”。第一次会请求管理员密码，安装受限 Helper 并执行 10 秒兼容性测试。
@@ -66,11 +67,11 @@ pmset -g | grep -i SleepDisabled
 swift run ClamshellGuardianPolicyTests
 ```
 
-测试覆盖：硬截止时间、15% 电量、热状态、15 秒心跳、可选的 10 分钟断网策略、Apple Silicon 架构、IPC UID、SleepDisabled 所有权和报告序列化。
+测试覆盖：硬截止时间、15% 电量、热状态、15 秒心跳、可选的 10 分钟断网策略、合盖主动熄屏状态机、Apple Silicon 架构、IPC UID、SleepDisabled 所有权和报告序列化。
 
 ## 技术与限制
 
-普通 IOKit idle-sleep assertion 不能替代合盖策略。本应用的 root Helper 使用绝对路径调用 `pmset -a disablesleep 1/0`，应用本身同时持有公开的 `PreventUserIdleSystemSleep` assertion。`disablesleep` 没有出现在当前 `pmset` 手册中，属于未公开支持的系统开关；macOS 更新后兼容性测试失败时，应用会拒绝启用。
+普通 IOKit idle-sleep assertion 不能替代合盖策略。本应用的 root Helper 使用绝对路径调用 `pmset -a disablesleep 1/0`，合盖后调用文档列出的 `pmset displaysleepnow`；应用本身同时持有公开的 `PreventUserIdleSystemSleep` assertion。`disablesleep` 没有出现在当前 `pmset` 手册中，属于未公开支持的系统开关；macOS 更新后兼容性测试失败时，应用会拒绝启用。
 
 当前 Beta 采用管理员授权安装传统 LaunchDaemon。面向普通用户的正式发行版应使用 Apple Developer ID 签名、公证，并迁移到 `SMAppService`；原因和步骤见 [docs/SIGNING_AND_NOTARIZATION.md](docs/SIGNING_AND_NOTARIZATION.md)。
 

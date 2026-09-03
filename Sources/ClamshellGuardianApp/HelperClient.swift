@@ -105,7 +105,7 @@ final class HelperInstaller {
               let status = client.send(HelperRequest(command: .status)) else {
             return false
         }
-        return status.ok && status.version == 1
+        return status.ok && status.version == GuardianConstants.ipcVersion
     }
 
     func install() throws {
