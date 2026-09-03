@@ -1,0 +1,19 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-build:
+    runs-on: macos-14
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Policy tests
+        run: swift run ClamshellGuardianPolicyTests
+      - name: Build arm64 application bundle
+        run: ./scripts/build.sh "$RUNNER_TEMP/clamshellguardian-output"
