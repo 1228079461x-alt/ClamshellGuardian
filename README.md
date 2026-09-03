@@ -53,7 +53,7 @@ pmset -g | grep -i SleepDisabled
 
 ## 从源码构建
 
-需要 macOS、Command Line Tools 和 Swift 6：
+需要 macOS、Command Line Tools 和 Swift 5.10 或更高版本：
 
 ```sh
 ./scripts/build.sh
